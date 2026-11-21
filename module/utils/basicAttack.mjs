@@ -598,6 +598,7 @@ export async function universalAttackLogic({
     // only new randomness is the bonus damage die, rolled exactly once.
     const { packet: banePacket, roll: baneDamageRoll } = await buildBanePacket({
       actor,
+      weapon,
       attackRoll,
       criticalSuccessThreshold,
       critScoreResult,

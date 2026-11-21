@@ -133,7 +133,26 @@
     "effectType3": "",
     "manualNotes": "",
     "vsTest": true,
-    "delivery": "indirect"
+    "delivery": "indirect",
+    "area": {
+      "shape": "wall",
+      "size": 0,
+      "angle": 0,
+      "targets": "enemies",
+      "includeCaster": false,
+      "linger": true,
+      "rounds": "",
+      "move": "",
+      "moveHexes": 0,
+      "stops": true,
+      "mayBorder": false,
+      "decoy": false,
+      "length": "3",
+      "blocks": "",
+      "crossing": true,
+      "occupiedOk": false,
+      "hexesPerCost": 0
+    }
   },
   "effects": [],
   "folder": "yQKWKFaPqrfuldp0",

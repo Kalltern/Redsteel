@@ -19,6 +19,11 @@
  *   attrSkill {key}      the attribute-wide skill bonus (`attributes.X.skillBonus`)
  *   sec    {key, mult}   a secondary attribute (Visage, Sinfulness)
  *   flat   {labelKey}    a named one-off term
+ *   attrTable {key, score}  a table lookup off an attribute (Speed, Initiative)
+ *   step   {labelKey, data}  a non-additive step (cap, halving, floor) shown
+ *                        as the change it made to the running number
+ *   effect {name, changeType, operand}  one Active Effect change replayed onto
+ *                        a derived total (Actor#_replayEffectChanges trace)
  *   base                 a stored starting number (sub-skills)
  *   bonus                the skill's `bonus` field, where perks and traits land
  *   global               the actor-wide `globalMod`
@@ -96,6 +101,22 @@ export function partBuilder({
       labelKey,
       value: Number(value) || 0,
     }),
+    // A table lookup off an attribute score (Speed from Dexterity, ...): the
+    // row names the score, since the value is not a multiple of it.
+    attrTable: (index, value) => ({
+      type: "attrTable",
+      key: attrKeys[index],
+      score: attrTotal(index),
+      value: Number(value) || 0,
+    }),
+    // One non-additive step (a cap, a halving, a floor) written as the change
+    // it made; `data` fills the label's placeholders at render time.
+    step: (labelKey, value, data = {}) => ({
+      type: "step",
+      labelKey,
+      data,
+      value: Math.round((Number(value) || 0) * 100) / 100,
+    }),
     base: (value) => ({ type: "base", value: Number(value) || 0 }),
     bonus: (value) => ({ type: "bonus", value: Number(value) || 0 }),
     global: () => ({ type: "global", value: Number(globalMod) || 0 }),
@@ -172,6 +193,26 @@ function partLabel(part) {
     }
     case "flat":
       return localizeOrNull(part.labelKey) ?? part.labelKey;
+    case "attrTable": {
+      const name =
+        localizeOrNull(
+          `REDSTEEL.Actor.Character.Attribute.${capitalize(part.key)}.long`,
+        ) ?? part.key;
+      return `${name} ${part.score}`;
+    }
+    case "step":
+      return game.i18n.format(part.labelKey, part.data ?? {});
+    case "effect": {
+      // Only a plain add reads as a term; anything else says what it did.
+      const operand = Number(part.operand) || 0;
+      const suffix = {
+        multiply: ` ×${operand}`,
+        override: ` = ${operand}`,
+        upgrade: ` ≥ ${operand}`,
+        downgrade: ` ≤ ${operand}`,
+      }[part.changeType];
+      return `${part.name || game.i18n.localize("REDSTEEL.Tooltip.Part.other")}${suffix ?? ""}`;
+    }
     case "base":
       return game.i18n.localize("REDSTEEL.Tooltip.Part.base");
     case "bonus":
@@ -256,7 +297,8 @@ export function renderBreakdown({
   const rows = [];
   for (const part of parts) {
     const value = Number(part.value) || 0;
-    const structural = part.type === "rank" || part.type === "attr";
+    const structural =
+      part.type === "rank" || part.type === "attr" || part.type === "attrTable";
     if (!value && !structural) continue;
 
     // Split an anonymous "Bonus" into the perks, traits and gear that made it.

@@ -49,6 +49,7 @@ import {
 import { mancerLockLabel, mancerSpellLock } from "../helpers/mancerSpells.mjs";
 import { applyFieryAura, spellTargetCapRefusal } from "./mancerFollowups.mjs";
 import { createSpellZone, placeSpellArea, spellArea } from "./spellArea.mjs";
+import { getBaseSpellManaCost } from "./lindarCharge.mjs";
 import { castHiddenTelepathy, offerPersistentEffort } from "./mentalist.mjs";
 import { areAdjacent } from "./positioning.mjs";
 import { actorHasSpecNode } from "../helpers/specialisations.mjs";
@@ -228,7 +229,7 @@ export async function performCast(
   // as before (`skipped`).
   let placed = null;
   if (spellArea(spell)) {
-    placed = await placeSpellArea(actor, spell, token);
+    placed = await placeSpellArea(actor, spell, token, { freeCast });
     if (!placed) {
       ui.notifications.info(
         game.i18n.localize("REDSTEEL.SpellArea.Cancelled"),
@@ -336,6 +337,7 @@ export async function performCast(
   if (!freeCast) {
     const ok = await game.redsteel.deductMana(actor, spell);
     if (!ok) return false;
+    await payWallExtraGroups(actor, spell, placed);
   }
   if (quickFocus) await takeQuickFocus(actor);
 
@@ -405,7 +407,8 @@ export async function performCast(
   // A trap keeps its cast for later: the margin is this roll's, but damage,
   // effects and any versus Test are rolled when something walks in
   // (utils/spellArea.mjs detonateTrap). Plain data, as it lives in a flag.
-  if (placed?.shape === "trap") {
+  // A wall that goes off on crossing (Fire Wall, Mystical wall) does the same.
+  if (placed?.shape === "trap" || (placed?.shape === "wall" && placed.crossing)) {
     placed.trapCast = {
       attackRoll: attackResults.attackRoll?.toJSON?.() ?? null,
       critSuccess: !!attackResults.critSuccess,
@@ -461,6 +464,32 @@ export async function performCast(
   });
 
   return true;
+}
+
+/**
+ * A wall paid per so many hexes (Fire Wall: "the mana cost is paid for every
+ * 4 hexes"): the cast's own payment covers the first group, each further one
+ * costs the spell's price again, the same price Precise Incantation pays
+ * (lindarCharge.mjs getBaseSpellManaCost). Placement already held the wall to
+ * what the caster's Mana pays for.
+ */
+async function payWallExtraGroups(actor, spell, placed) {
+  if (placed?.shape !== "wall") return;
+  const perCost = spellArea(spell)?.hexesPerCost ?? 0;
+  if (perCost <= 0) return;
+  const groups = Math.ceil((placed.cells?.length ?? 0) / perCost);
+  const extra = Math.max(0, groups - 1) * getBaseSpellManaCost(actor, spell);
+  if (extra <= 0) return;
+  const mana = Number(actor.system.stats.mana?.value) || 0;
+  await actor.update({ "system.stats.mana.value": Math.max(0, mana - extra) });
+  ui.notifications.info(
+    game.i18n.format("REDSTEEL.SpellArea.WallExtraCost", {
+      spell: spell.localizedName ?? spell.name,
+      hexes: placed.cells.length,
+      groups,
+      extra,
+    }),
+  );
 }
 
 /**

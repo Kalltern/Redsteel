@@ -1,4 +1,5 @@
 import { prepareActiveEffectCategories } from "../helpers/effects.mjs";
+import { BANE_TYPES } from "../helpers/banes.mjs";
 import {
   SUBSTANCES,
   BASES,
@@ -596,6 +597,22 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
           index,
           value: stored[index] ?? "",
         }));
+        // Bane (Metla) slots: same three-slot, index-keyed pattern, offered
+        // from the Bane registry so only real category keys can be stored.
+        const rawBanes = this.item.system.weaponMods?.baneTypes;
+        const storedBanes = Array.isArray(rawBanes)
+          ? rawBanes
+          : Object.values(rawBanes ?? {});
+        context.enchantBaneSlots = [0, 1, 2].map((index) => ({
+          index,
+          value: storedBanes[index] ?? "",
+        }));
+        context.baneTypeOptions = Object.entries(BANE_TYPES)
+          .map(([key, def]) => ({
+            key,
+            label: game.i18n.localize(def.label),
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
         break;
       }
       case "enchantments":
@@ -611,6 +628,16 @@ export class RedsteelItemSheet extends api.HandlebarsApplicationMixin(
             ? weaponEnchantMods(readEnchantments(this.item))
             : gearEnchantMods(readEnchantments(this.item));
         context.enchantSlot = this.item.type === "weapon" ? "weapon" : "gear";
+        {
+          const baneKeys = context.enchantMods?.baneTypes ?? [];
+          context.enchantBaneLabel = baneKeys.length
+            ? game.i18n.format("REDSTEEL.Enchantment.FIELDS.baneTypes.pill", {
+                types: baneKeys
+                  .map((k) => game.i18n.localize(BANE_TYPES[k]?.label ?? k))
+                  .join(", "),
+              })
+            : "";
+        }
         if (game.user.isGM) {
           // The GM identification block. Display only: the real numbers the
           // combat math reads are never touched by identification.

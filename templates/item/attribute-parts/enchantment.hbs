@@ -544,6 +544,29 @@
           </div>
         {{/each}}
       </div>
+
+      <h3 class="enchantment-heading">{{localize
+          "REDSTEEL.Enchantment.FIELDS.baneTypes.label"
+        }}</h3>
+      <p class="hint">{{localize
+          "REDSTEEL.Enchantment.FIELDS.baneTypes.hint"
+        }}</p>
+
+      <div class="grid grid-3col">
+        {{#each enchantBaneSlots as |slot|}}
+          <div class="grid-span-1">
+            <select name="system.weaponMods.baneTypes.{{slot.index}}">
+              <option value="">{{localize "REDSTEEL.UI.selectType"}}</option>
+              {{#each @root.baneTypeOptions as |bane|}}
+                <option value="{{bane.key}}"
+                  {{#if (eq slot.value bane.key)}}selected{{/if}}>
+                  {{bane.label}}
+                </option>
+              {{/each}}
+            </select>
+          </div>
+        {{/each}}
+      </div>
     {{/if}}
 
     {{!-- =====================

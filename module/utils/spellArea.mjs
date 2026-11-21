@@ -69,6 +69,7 @@ import { isHostileSide } from "./movementZones.mjs";
 import { isActorDead } from "./deadTokens.mjs";
 import { getSpellPower } from "./spellPower.mjs";
 import { resolveSpellPowerTokens } from "./spellCards.mjs";
+import { getBaseSpellManaCost } from "./lindarCharge.mjs";
 
 const SYSTEM_ID = "redsteel";
 const SOCKET = "system.redsteel";
@@ -80,7 +81,9 @@ const MSG_CREATE = "spellZoneCreate";
 const MSG_DELETE = "spellZoneDelete";
 const MSG_MOVE = "spellZoneMove";
 
-const SHAPES = new Set(["burst", "aura", "cone", "line", "trap"]);
+const SHAPES = new Set(["burst", "aura", "cone", "line", "trap", "wall"]);
+/** What a wall's hexes block: nothing, vision only, or movement and vision. */
+const WALL_BLOCKS = new Set(["sight", "solid"]);
 /** How a lasting burst zone moves: by the caster's chip, or on its own. */
 const MOVES = new Set(["steer", "random"]);
 
@@ -432,6 +435,14 @@ export function spellArea(spell) {
     stops: area.stops === true,
     mayBorder: area.mayBorder === true,
     decoy: area.decoy === true,
+    // Walls (shape "wall"): the most hexes (a formula, "" = no limit), what
+    // the hexes block, whether crossing sets the spell off, whether occupied
+    // hexes may be covered, and how many hexes one payment of the cost buys.
+    length: area.length == null ? "" : String(area.length).trim(),
+    blocks: WALL_BLOCKS.has(area.blocks) ? area.blocks : "",
+    crossing: area.crossing === true,
+    occupiedOk: area.occupiedOk === true,
+    hexesPerCost: Math.max(0, Math.floor(Number(area.hexesPerCost) || 0)),
   };
 }
 
@@ -967,7 +978,7 @@ function confirmTargets({ actor, casterDoc, area, cells, label }) {
  *   out; `{skipped: true}` when the spell should be cast on hand-picked
  *   targets as before.
  */
-export async function placeSpellArea(actor, spell, token = null) {
+export async function placeSpellArea(actor, spell, token = null, { freeCast = false } = {}) {
   const area = spellArea(spell);
   if (!area) return { skipped: true };
   if (!game.settings.get(SYSTEM_ID, SETTING)) return { skipped: true };
@@ -986,6 +997,7 @@ export async function placeSpellArea(actor, spell, token = null) {
   const label = spell.localizedName ?? spell.name;
   const range = spellRange(spell);
   const ctx = { area, range, casterDoc, casterCells, label };
+  if (area.shape === "wall") ctx.max = wallMaxHexes(actor, spell, area, freeCast);
 
   let placed = null;
   switch (area.shape) {
@@ -1008,6 +1020,9 @@ export async function placeSpellArea(actor, spell, token = null) {
     case "trap":
       placed = await placeTrap(ctx);
       break;
+    case "wall":
+      placed = await placeWall(ctx);
+      break;
   }
   if (!placed?.cells?.length) return null;
 
@@ -1023,6 +1038,22 @@ export async function placeSpellArea(actor, spell, token = null) {
       direction: null,
       targetIds: [],
       decoyTile: area.decoy ? decoyTileData(casterDoc, placed.origin) : null,
+    };
+  }
+
+  // A wall over empty hexes is aimed at nobody (whoever crosses it is hit
+  // later); one that may cover occupied hexes (Ice wall) targets who stands
+  // there through the usual confirm step below.
+  if (area.shape === "wall" && !area.occupiedOk) {
+    setUserTargets([]);
+    return {
+      sceneId: canvas.scene.id,
+      shape: "wall",
+      cells: placed.cells,
+      origin: placed.origin,
+      direction: null,
+      targetIds: [],
+      crossing: area.crossing,
     };
   }
 
@@ -1126,9 +1157,14 @@ export async function createSpellZone({
       }
     }
   }
+  const isWall = area.shape === "wall";
   const data = {
     name: game.i18n.format(
-      isTrap ? "REDSTEEL.SpellArea.TrapZoneName" : "REDSTEEL.SpellArea.ZoneName",
+      isTrap
+        ? "REDSTEEL.SpellArea.TrapZoneName"
+        : isWall
+          ? "REDSTEEL.SpellArea.WallZoneName"
+          : "REDSTEEL.SpellArea.ZoneName",
       { spell: spellName, caster: actor.name },
     ),
     color: ZONE_COLOR,
@@ -1160,6 +1196,17 @@ export async function createSpellZone({
               cast: area.trapCast ?? null,
             },
           }),
+          // Walls: {blocks, crossing, stops, enemiesOnly, cast}; crossing ones
+          // are set off by detonateWall, blocking ones raise Foundry walls.
+          ...(isWall && {
+            wall: {
+              blocks: spellInfo?.blocks ?? "",
+              crossing: spellInfo?.crossing === true,
+              stops: spellInfo?.stops === true,
+              enemiesOnly: spellInfo?.targets === "enemies",
+              cast: area.trapCast ?? null,
+            },
+          }),
         },
       },
     },
@@ -1168,6 +1215,7 @@ export async function createSpellZone({
     sceneId: scene.id,
     data,
     decoyTile: isTrap ? (area.decoyTile ?? null) : null,
+    wallEdges: isWall && spellInfo?.blocks ? perimeterEdges(grid, area.cells) : null,
   });
 }
 
@@ -1435,6 +1483,20 @@ async function handleGM({ type, payload }) {
     }
     const created = await scene.createEmbeddedDocuments("Region", [payload.data]);
     for (const region of created ?? []) scheduleTimedZone(region);
+    // A blocking spell wall: Foundry walls along its outline, tied to it.
+    const region = created?.[0];
+    const blocks = region?.getFlag(SYSTEM_ID, ZONE_FLAG)?.wall?.blocks;
+    if (region && blocks && payload.wallEdges?.length) {
+      const restrict = wallRestrictions(blocks);
+      await scene.createEmbeddedDocuments(
+        "Wall",
+        payload.wallEdges.map((c) => ({
+          c,
+          ...restrict,
+          flags: { [SYSTEM_ID]: { spellWall: region.id } },
+        })),
+      );
+    }
     return created;
   }
   if (type === MSG_DELETE) {
@@ -1501,6 +1563,14 @@ function trapZonesOn(scene) {
   return (scene?.regions?.contents ?? []).filter(
     (r) => r.getFlag(SYSTEM_ID, ZONE_FLAG)?.trap,
   );
+}
+
+/** Everything a walker can set off: traps, and walls that go off on crossing. */
+function triggerZonesOn(scene) {
+  return (scene?.regions?.contents ?? []).filter((r) => {
+    const info = r.getFlag(SYSTEM_ID, ZONE_FLAG);
+    return info?.trap || info?.wall?.crossing;
+  });
 }
 
 /**
@@ -1603,7 +1673,11 @@ function enteredCells(doc, movement, grid) {
 /** The traps a move ran into, in the order it reached them. */
 function trapsCrossed(doc, movement) {
   const scene = doc?.parent;
-  const traps = trapZonesOn(scene);
+  const traps = triggerZonesOn(scene).filter((r) => {
+    // A wall that hits enemies only (Mystical wall) lets the caster's side by.
+    const info = r.getFlag(SYSTEM_ID, ZONE_FLAG);
+    return !info.wall?.enemiesOnly || isEnemyOfCaster(doc, info);
+  });
   if (!traps.length) return [];
   const byCell = new Map();
   for (const region of traps) {
@@ -1719,7 +1793,7 @@ function onTokenMoved(doc, movement, operation, user) {
   if (isActorDead(doc?.actor)) return;
   const hits = trapsCrossed(doc, movement);
   if (!hits.length) return;
-  const stopAt = hits.findIndex((h) => h.info.trap?.stops);
+  const stopAt = hits.findIndex((h) => h.info.trap?.stops || h.info.wall?.stops);
   const fired = stopAt >= 0 ? hits.slice(0, stopAt + 1) : hits;
 
   if (stopAt >= 0 && user?.id === game.user.id && movement?.pending?.waypoints?.length) {
@@ -1732,7 +1806,10 @@ function onTokenMoved(doc, movement, operation, user) {
   if (!isActiveGM()) return;
 
   (async () => {
-    for (const hit of fired) await detonateTrap(hit.region, doc);
+    for (const hit of fired) {
+      if (hit.info.wall) await detonateWall(hit.region, doc);
+      else await detonateTrap(hit.region, doc);
+    }
     if (stopAt < 0) return;
     const cell = fired.at(-1).cell;
     const on = (doc.getOccupiedGridSpaceOffsets?.() ?? []).some(
@@ -1742,6 +1819,277 @@ function onTokenMoved(doc, movement, operation, user) {
     const point = gridFor(doc.parent).getTopLeftPoint(cell);
     await doc.update({ x: point.x, y: point.y }, { redsteelTrapReturn: true });
   })().catch((err) => console.error("Redsteel | Trap failed to go off", err));
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Walls                                                                     */
+/* -------------------------------------------------------------------------- */
+
+/** A wall can never run longer than this, however much it may cost. */
+const WALL_HARD_CAP = 60;
+
+/**
+ * The most hexes a wall may cover for this caster: its `length` (a number or
+ * a Spell Power formula, user ruling 2026-11-21: Stone wall = Spell Power) and,
+ * for a wall paid per so many hexes (Fire Wall, 4), as many groups as the
+ * caster's Mana pays for. Infinity when nothing limits it (capped later).
+ */
+function wallMaxHexes(actor, spell, area, freeCast) {
+  let max = Infinity;
+  const length = zoneRounds(actor, spell, area.length);
+  if (length > 0) max = Math.min(max, length);
+  if (area.hexesPerCost > 0 && !freeCast) {
+    const cost = getBaseSpellManaCost(actor, spell);
+    if (cost > 0) {
+      const mana = Number(actor?.system?.stats?.mana?.value) || 0;
+      max = Math.min(max, Math.floor(mana / cost) * area.hexesPerCost);
+    }
+  }
+  return max;
+}
+
+/** A small counter plate over the hotbar while a wall is drawn. */
+function createWallCounter() {
+  const plate = document.createElement("div");
+  plate.className = "rs-spell-area-confirm rs-spell-wall-counter";
+  plate.style.cssText = [
+    "position: fixed",
+    `bottom: ${panelBottomOffset()}px`,
+    "left: 50%",
+    "transform: translateX(-50%)",
+    "z-index: 1000",
+    "padding: 6px 14px",
+    "background: var(--rs-chat-bg, #0f0f0f)",
+    "border: 1px solid rgba(160, 112, 60, 0.7)",
+    "box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7)",
+    "color: var(--rs-chat-text-strong, #cdd0d2)",
+    'font-family: Georgia, "Times New Roman", serif',
+    "font-size: 14px",
+    "pointer-events: none",
+  ].join("; ");
+  document.body.appendChild(plate);
+  return plate;
+}
+
+/**
+ * Wall: press on a hex and drag; every hex the cursor passes joins the wall,
+ * touching the one before it, up to the spell's limit (user ruling
+ * 2026-11-21). Dragging back over the previous hex takes the last one off.
+ * Releasing finishes; right click or Escape cancels. Hexes must be in range
+ * and, unless the spell allows it (Ice wall), empty.
+ */
+async function placeWall({ area, range, casterCells, label, max }) {
+  const board = document.getElementById("board");
+  if (!board || !canvas?.ready) return null;
+  const cap = Number.isFinite(max) ? Math.max(0, max) : WALL_HARD_CAP;
+  if (cap < 1) return null;
+  const limited = Number.isFinite(max);
+
+  const occupied = new Set();
+  if (!area.occupiedOk) {
+    for (const doc of canvas.scene.tokens.contents) {
+      for (const cell of occupiedOffsets(doc)) occupied.add(cellKey(cell));
+    }
+  }
+  const reasonFor = (cell) => {
+    if (range !== null && distanceFrom(casterCells, cell) > range) {
+      return game.i18n.format("REDSTEEL.SpellArea.OutOfRange", { spell: label, range });
+    }
+    if (occupied.has(cellKey(cell))) return game.i18n.localize("REDSTEEL.SpellArea.WallOccupied");
+    return null;
+  };
+
+  ui.notifications.info(
+    limited
+      ? game.i18n.format("REDSTEEL.SpellArea.PickWall", { spell: label, max: cap })
+      : game.i18n.format("REDSTEEL.SpellArea.PickWallNoLimit", { spell: label }),
+  );
+  const overlay = createOverlay({ breathe: true });
+  const counter = createWallCounter();
+  const same = (a, b) => a && b && a.i === b.i && a.j === b.j;
+
+  return new Promise((resolve) => {
+    let chain = [];
+    let dragging = false;
+    let timer = null;
+
+    const redraw = (hover = null) => {
+      const shown = chain.length ? chain : hover ? [hover] : [];
+      overlay.draw(shown, !hover || !reasonFor(hover) || chain.length > 0);
+      counter.textContent = game.i18n.format(
+        limited ? "REDSTEEL.SpellArea.WallCount" : "REDSTEEL.SpellArea.WallCountNoLimit",
+        { spell: label, count: chain.length, max: cap },
+      );
+    };
+    const cellAt = (event) => {
+      const { i, j } = canvas.grid.getOffset(canvasPoint(event));
+      return { i, j };
+    };
+    const extendTo = (cell) => {
+      const last = chain.at(-1);
+      if (!last || same(cell, last)) return;
+      // Back over the previous hex: the last one comes off.
+      if (chain.length > 1 && same(cell, chain.at(-2))) {
+        chain.pop();
+        return;
+      }
+      // A fast drag skips hexes: walk the grid's own path to the cursor.
+      let path = [];
+      try {
+        path =
+          canvas.grid.getDirectPath([canvas.grid.getCenterPoint(last), canvas.grid.getCenterPoint(cell)]) ??
+          [];
+      } catch (_error) {
+        path = [cell];
+      }
+      for (const step of path.slice(1)) {
+        const next = { i: step.i, j: step.j };
+        if (chain.length >= cap) break;
+        if (chain.some((c) => same(c, next))) break;
+        if (reasonFor(next)) break;
+        chain.push(next);
+      }
+    };
+    const finish = (value) => {
+      window.removeEventListener("pointerdown", onDown, true);
+      window.removeEventListener("pointermove", onMove, true);
+      window.removeEventListener("pointerup", onUp, true);
+      window.removeEventListener("contextmenu", onContext, true);
+      window.removeEventListener("keydown", onKey, true);
+      clearTimeout(timer);
+      overlay.destroy();
+      counter.remove();
+      resolve(value);
+    };
+    const onDown = (event) => {
+      if (event.target !== board) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (event.button !== 0) return finish(null);
+      const cell = cellAt(event);
+      const reason = reasonFor(cell);
+      if (reason) {
+        ui.notifications.warn(reason);
+        return;
+      }
+      chain = [cell];
+      dragging = true;
+      redraw();
+    };
+    const onMove = (event) => {
+      if (!dragging) {
+        if (event.target !== board) return overlay.draw(null);
+        return redraw(cellAt(event));
+      }
+      extendTo(cellAt(event));
+      redraw();
+    };
+    const onUp = (event) => {
+      if (!dragging || event.button !== 0) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      dragging = false;
+      finish(chain.length ? { cells: chain, origin: chain[0], direction: null } : null);
+    };
+    const onContext = (event) => {
+      if (event.target !== board) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    const onKey = (event) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      finish(null);
+    };
+    window.addEventListener("pointerdown", onDown, true);
+    window.addEventListener("pointermove", onMove, true);
+    window.addEventListener("pointerup", onUp, true);
+    window.addEventListener("contextmenu", onContext, true);
+    window.addEventListener("keydown", onKey, true);
+    timer = setTimeout(() => finish(null), PLACEMENT_TIMEOUT);
+    redraw();
+  });
+}
+
+/**
+ * The outline of a set of hexes as wall segments: every hex edge not shared
+ * with another hex of the set, so the Foundry walls box the whole wall in.
+ */
+function perimeterEdges(grid, cells) {
+  const key = (p) => `${Math.round(p.x * 10)},${Math.round(p.y * 10)}`;
+  const count = new Map();
+  const edges = [];
+  for (const cell of cells) {
+    const v = grid.getVertices({ i: cell.i, j: cell.j });
+    for (let k = 0; k < v.length; k++) {
+      const a = v[k];
+      const b = v[(k + 1) % v.length];
+      const id = [key(a), key(b)].sort().join("|");
+      count.set(id, (count.get(id) ?? 0) + 1);
+      edges.push({ id, c: [a.x, a.y, b.x, b.y] });
+    }
+  }
+  const seen = new Set();
+  return edges
+    .filter((e) => count.get(e.id) === 1 && !seen.has(e.id) && seen.add(e.id))
+    .map((e) => e.c.map((n) => Math.round(n * 100) / 100));
+}
+
+/** What a wall blocks, as Wall document restrictions. */
+function wallRestrictions(blocks) {
+  const SENSE = CONST.WALL_SENSE_TYPES;
+  const MOVE = CONST.WALL_MOVEMENT_TYPES;
+  if (blocks === "solid") {
+    return { move: MOVE.NORMAL, sight: SENSE.NORMAL, light: SENSE.NORMAL, sound: SENSE.NORMAL };
+  }
+  // "sight": an opaque wall of fire you can still walk through.
+  return { move: MOVE.NONE, sight: SENSE.NORMAL, light: SENSE.NORMAL, sound: SENSE.NONE };
+}
+
+/** The Foundry walls a spell wall's Region raised. */
+function spellWallsOf(region) {
+  return (region?.parent?.walls?.contents ?? []).filter(
+    (w) => w.getFlag(SYSTEM_ID, "spellWall") === region.id,
+  );
+}
+
+/**
+ * Someone crossed a wall that goes off on crossing (active GM): its card is
+ * rolled for them, the margin the cast's, the wall stays (user ruling
+ * 2026-11-21, Fire Wall and Mystical wall).
+ */
+async function detonateWall(region, walker) {
+  const info = region.getFlag(SYSTEM_ID, ZONE_FLAG);
+  if (!info?.wall) return;
+  const notice = game.i18n.format("REDSTEEL.SpellArea.WallCrossed", {
+    spell: info.spellName,
+    target: walker.name,
+  });
+  const caster = fromUuidSync(info.casterUuid);
+  const spell = caster?.items?.get(info.spellId) ?? null;
+  const cast = info.wall.cast;
+  const attackResults = trapAttackResults(cast, game.messages.get(info.castMessageId));
+  if (!caster || !spell || !attackResults || !game.redsteel?.finalizeRollsAndPostChat) {
+    await ChatMessage.create({ content: `<p><b>${notice}</b></p>` });
+    return;
+  }
+  await game.redsteel.finalizeRollsAndPostChat(caster, spell, cast.bonuses ?? {}, attackResults, {
+    focusSpent: cast.focusSpent ?? 0,
+    ignoreChanneling: !!cast.ignoreChanneling,
+    bloodPayment: !!cast.bloodPayment,
+    hastenedCast: !!cast.hastenedCast,
+    catalyst: !!cast.catalyst,
+    trap: { targetIds: [walker.id], walkerId: walker.id, notice },
+  });
+}
+
+/** Is this walker on the other side from the zone's caster? */
+function isEnemyOfCaster(walker, info) {
+  const caster = fromUuidSync(info.casterUuid);
+  const casterToken =
+    walker.parent?.tokens?.contents?.find((d) => d.actor?.uuid === info.casterUuid) ?? null;
+  return isHostileSide(walker) !== casterSide(caster, casterToken);
 }
 
 /** The Channeling status, read the way magicSkillBonuses.mjs reads it. */
@@ -1808,6 +2156,9 @@ export function registerSpellAreaHooks() {
     if (!isActiveGM()) return;
     const tileId = region.getFlag?.(SYSTEM_ID, ZONE_FLAG)?.trap?.tileId;
     if (tileId) region.parent?.tiles?.get(tileId)?.delete().catch(() => {});
+    // A spell wall's Foundry walls go with it.
+    const walls = spellWallsOf(region).map((w) => w.id);
+    if (walls.length) region.parent.deleteEmbeddedDocuments("Wall", walls).catch(() => {});
   });
 
   // ... or with its combat.

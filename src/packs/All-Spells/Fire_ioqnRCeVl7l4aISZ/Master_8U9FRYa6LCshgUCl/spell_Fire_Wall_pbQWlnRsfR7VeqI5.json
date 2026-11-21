@@ -139,7 +139,26 @@
     "effectType2": "",
     "effectType3": "",
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "wall",
+      "size": 0,
+      "angle": 0,
+      "targets": "all",
+      "includeCaster": false,
+      "linger": true,
+      "rounds": "",
+      "move": "",
+      "moveHexes": 0,
+      "stops": false,
+      "mayBorder": false,
+      "decoy": false,
+      "length": "",
+      "blocks": "sight",
+      "crossing": true,
+      "occupiedOk": false,
+      "hexesPerCost": 4
+    }
   },
   "effects": [],
   "folder": "8U9FRYa6LCshgUCl",

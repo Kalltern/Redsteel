@@ -723,9 +723,23 @@ function isBloodHarvestAttack(message, attack) {
 /*  Apply Damage                                */
 /* -------------------------------------------- */
 
+/**
+ * A trap's card was aimed by the trap, not by anyone's targeting (the GM's
+ * client posts it the moment someone walks in). With nothing targeted, the
+ * Apply buttons take the victims it stamped (utils/spellArea.mjs
+ * detonateTrap). Any other card, or anything already targeted, is left as is.
+ */
+function targetTrapVictims(message) {
+  if (game.user.targets.size || !message?.flags?.redsteel?.trapDetonation) return;
+  for (const id of message.flags.attack?.targets ?? []) {
+    canvas?.tokens?.get(id)?.setTarget(true, { releaseOthers: false });
+  }
+}
+
 export async function handleApplyDamage(messageId) {
   const message = game.messages.get(messageId);
   if (!message?.flags?.attack) return;
+  targetTrapVictims(message);
 
   const checkTargetsAndContinue = async () => {
     const targets = Array.from(game.user.targets);
@@ -3434,6 +3448,7 @@ async function resolveDisruptiveRows(actor, tokenDoc, effects, ticked, caster = 
 export async function handleApplyEffects(messageId) {
   const message = game.messages.get(messageId);
   if (!message?.flags?.effects) return;
+  targetTrapVictims(message);
 
   const checkTargetsAndContinue = () => {
     const targets = Array.from(game.user.targets);

@@ -1537,7 +1537,8 @@ export async function finalizeRollsAndPostChat(
   } = options;
   // A trap's own cast shows only its description and margin: what it does
   // is rolled when something walks into it (user ruling 2026-11-21).
-  const trapCast = area?.shape === "trap";
+  // A wall that goes off on crossing (Fire Wall, Mystical wall) likewise.
+  const trapCast = area?.shape === "trap" || (area?.shape === "wall" && area?.crossing === true);
   const trapDetonation = Array.isArray(trap?.targetIds) ? trap : null;
   // Incantator threshold shifts, the same figures performAttackRoll used, so
   // the card's stored thresholds judge a reroll on the same terms.
@@ -1806,7 +1807,9 @@ ${renderMarginFollowupLine({
   // but only when the cast actually landed — a failed cast has nothing to
   // sustain. A reroll that turns the failure into a success starts it late
   // (see applyPostCastEffects in castSpell.mjs).
-  if (castSucceeded && !fromChanneling) {
+  // A trap or wall going off is not a new cast: restarting its Channeling here
+  // would replace the one that holds the wall up and take the wall with it.
+  if (castSucceeded && !fromChanneling && !trapDetonation) {
     await startChannelingForSpell(actor, spell, { focusSpent });
   }
   // --- CRITICAL SCORE ROLL ---

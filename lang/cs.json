@@ -5913,6 +5913,11 @@
           "label": "Typy poškození",
           "hint": "Až tři typy, použijí se podle režimu výše."
         },
+        "baneTypes": {
+          "label": "Metla",
+          "hint": "Zbraň je Metlou proti těmto typům tvorů: její nositel proti nim při útoku a krytí získá plný bonus Metly. Nesčítá se s vlastní Metlou nositele.",
+          "pill": "Metla: {types}"
+        },
         "armorValue": {
           "label": "Zbroj"
         },
@@ -6167,7 +6172,27 @@
       "TrapOccupied": "Past potřebuje prázdný hex.",
       "TrapAdjacent": "Past nesmí sousedit s jinou pastí.",
       "TrapZoneName": "{spell}: past ({caster})",
-      "TrapTriggered": "{spell} spouští {target}."
+      "TrapTriggered": "{spell} spouští {target}.",
+      "ShapeWall": "Zeď (malované hexy)",
+      "Length": "Délka zdi",
+      "LengthHint": "Zeď: nejvíc hexů, které smí pokrýt, číslo nebo vzorec s tokenem Síly kouzla. Prázdné: bez omezení (Ohnivou zeď drží zpátky mana).",
+      "Blocks": "Blokuje",
+      "BlocksNone": "Nic",
+      "BlocksSight": "Jen výhled",
+      "BlocksSolid": "Pohyb i výhled",
+      "Crossing": "Spustí se při průchodu",
+      "CrossingHint": "Zeď: kdo do ní vstoupí, tomu se pokaždé hodí karta kouzla (Počáteční cíle \"Jen nepřátelé\" šetří stranu sesilatele).",
+      "OccupiedOk": "Smí pokrýt obsazené hexy",
+      "HexesPerCost": "Hexů za cenu",
+      "HexesPerCostHint": "Zeď: cena kouzla se platí znovu za každý takový počet hexů (Ohnivá zeď: 4). 0: jedna cena za celou zeď.",
+      "PickWall": "{spell}: stiskni na hexu a táhni pro nakreslení zdi, nejvýš {max} hexů. Puštěním dokončíš (pravé tlačítko nebo Esc ruší).",
+      "PickWallNoLimit": "{spell}: stiskni na hexu a táhni pro nakreslení zdi. Puštěním dokončíš (pravé tlačítko nebo Esc ruší).",
+      "WallCount": "{spell}: {count} / {max} hexů",
+      "WallCountNoLimit": "{spell}: {count} hexů",
+      "WallOccupied": "Zeď potřebuje prázdné hexy.",
+      "WallExtraCost": "{spell}: {hexes} hexů stojí {groups} seslání, o {extra} many víc.",
+      "WallZoneName": "{spell} ({caster})",
+      "WallCrossed": "{target} prochází: {spell}."
     },
     "Positioning": {
       "Label": "Postavení v boji",
@@ -6666,6 +6691,7 @@
       "current": "Aktuálně",
       "noteMissing": "Poznámku s pravidly se nepodařilo otevřít.",
       "Calculation": "Výpočet",
+      "score": "Hodnota",
       "WhenDefending": "Při obraně",
       "Part": {
         "rank": "Stupeň {rank}",
@@ -6686,7 +6712,12 @@
         "makeshiftWeapon": "Provizorní zbraň",
         "daggerDefense": "Bez postihu dýky (Stín)",
         "shield": "Štít",
-        "dualWield": "Boj dvěma zbraněmi"
+        "dualWield": "Boj dvěma zbraněmi",
+        "cap": "Maximum ({cap})",
+        "fatigue": "Únava ({degree}. stupeň)",
+        "roundDown": "Zaokrouhlení dolů",
+        "crippled": "Zmrzačení (polovina)",
+        "godless": "Neznaboh"
       }
     },
     "Keyword": {

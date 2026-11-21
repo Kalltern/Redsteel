@@ -191,6 +191,9 @@
         {{#each enchantMods.damageTypes as |type|}}
           <span class="enchantment-total-pill">{{type}}</span>
         {{/each}}
+        {{#if enchantBaneLabel}}
+          <span class="enchantment-total-pill">{{enchantBaneLabel}}</span>
+        {{/if}}
         {{#if enchantMods.effects.stagger}}
           <span class="enchantment-total-pill">{{localize
               "REDSTEEL.Item.Weapon.FIELDS.stagger.label"

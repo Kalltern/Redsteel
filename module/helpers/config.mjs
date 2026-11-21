@@ -2951,11 +2951,19 @@ REDSTEEL.spellAreaShapes = {
   cone: "REDSTEEL.SpellArea.ShapeCone",
   line: "REDSTEEL.SpellArea.ShapeLine",
   trap: "REDSTEEL.SpellArea.ShapeTrap",
+  wall: "REDSTEEL.SpellArea.ShapeWall",
 };
 
 REDSTEEL.spellAreaTargets = {
   all: "REDSTEEL.SpellArea.TargetsAll",
   enemies: "REDSTEEL.SpellArea.TargetsEnemies",
+};
+
+/** What a wall spell's hexes block on the map (utils/spellArea.mjs). */
+REDSTEEL.spellAreaBlocks = {
+  "": "REDSTEEL.SpellArea.BlocksNone",
+  sight: "REDSTEEL.SpellArea.BlocksSight",
+  solid: "REDSTEEL.SpellArea.BlocksSolid",
 };
 
 /** How a lasting burst zone moves (utils/spellArea.mjs). */

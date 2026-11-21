@@ -1625,7 +1625,8 @@
         "dodge": 0,
         "breakthroughRoll": "",
         "damageTypeMode": "",
-        "damageTypes": []
+        "damageTypes": [],
+        "baneTypes": []
       },
       "damageTypeModeOptions": ["", "expand", "override"],
       "gearMods": {
@@ -2039,7 +2040,12 @@
         "moveHexes": 0,
         "stops": false,
         "mayBorder": false,
-        "decoy": false
+        "decoy": false,
+        "length": "",
+        "blocks": "",
+        "crossing": false,
+        "occupiedOk": false,
+        "hexesPerCost": 0
       },
       "sustained": false,
       "difficulty": 0,

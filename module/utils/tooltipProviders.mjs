@@ -12,7 +12,7 @@ import { ruleNoteFooter } from "./tooltipJournals.mjs";
 import { buildSpellCard, renderInspectorCard } from "./spellCards.mjs";
 import { REDSTEEL } from "../helpers/config.mjs";
 import { effectiveCombatRating } from "./testRating.mjs";
-import { renderBreakdown } from "./ratingBreakdown.mjs";
+import { renderBreakdown, reconcileParts, bonusSources } from "./ratingBreakdown.mjs";
 
 /* -------------------------------------------- */
 /*  Shared rendering                            */
@@ -576,15 +576,89 @@ registerTooltip("attribute", ({ id, actor }) => {
       ])
     : "";
 
+  const breakdowns = attributeBreakdowns(actor, id);
+
   return ttFrame({
     title:
       localizeOrNull(
         `REDSTEEL.Actor.Character.Attribute.${capitalize(id)}.long`,
       ) ?? id,
-    body: `${stats}<div class="tt-desc">${desc}</div>`,
+    // The chance sum ends on the same number, so it replaces the stat line.
+    body: `${breakdowns || stats}<div class="tt-desc">${desc}</div>`,
     footer: ruleNoteFooter("attributes"),
   });
 });
+
+/**
+ * How an attribute score and its test chance were reached, as two sums.
+ *
+ * Built here rather than recorded in prepareDerivedData: both are plain sums
+ * of fields already on the actor, so the reconcile pass keeps them honest
+ * against the numbers the sheet prints. Either section drops out on its own
+ * when it would be a single row (an unmodified score is just "Base").
+ *
+ * @param {Actor} actor
+ * @param {string} id  attribute key, e.g. "str"
+ * @returns {string}
+ */
+function attributeBreakdowns(actor, id) {
+  if (actor?.type !== "character") return "";
+  const system = actor.system;
+  const attribute = system.attributes?.[id];
+  if (!attribute) return "";
+  const path = `system.attributes.${id}`;
+
+  // Score: the authored value, effects that add to it, then `bonus`.
+  const valueSources = bonusSources(actor, `${path}.value`);
+  const valueFromEffects = valueSources.reduce((t, s) => t + s.value, 0);
+  const score = {
+    total: Number(attribute.total) || 0,
+    parts: [
+      { type: "base", value: (Number(attribute.value) || 0) - valueFromEffects },
+      ...valueSources.map((s) => ({ type: "flat", label: s.name, value: s.value })),
+      { type: "bonus", value: Number(attribute.bonus) || 0 },
+    ],
+  };
+  reconcileParts(score, "total", "parts");
+
+  // Test chance: 15, the score x10, Muscles / Nimbleness for Str / Dex, the
+  // attribute's own modBonus and the actor-wide modifier (see actor.mjs).
+  const helper = { str: "muscles", dex: "nimbleness" }[id];
+  const chance = {
+    total: Number(attribute.mod) || 0,
+    parts: [
+      { type: "base", value: 15 },
+      { type: "attr", key: id, mult: 10, value: (Number(attribute.total) || 0) * 10 },
+      helper
+        ? {
+            type: "flat",
+            labelKey: `REDSTEEL.Actor.Character.skills.${helper}.label`,
+            value: Number(system.skills?.[helper]?.rating) || 0,
+          }
+        : null,
+      { type: "bonus", value: Number(attribute.modBonus) || 0 },
+      { type: "global", value: Number(system.globalMod) || 0 },
+    ].filter(Boolean),
+  };
+  reconcileParts(chance, "total", "parts");
+
+  return [
+    renderBreakdown({
+      parts: score.parts,
+      total: score.total,
+      label: game.i18n.localize("REDSTEEL.Tooltip.score"),
+      actor,
+      bonusKey: `${path}.bonus`,
+    }),
+    renderBreakdown({
+      parts: chance.parts,
+      total: chance.total,
+      label: game.i18n.localize("REDSTEEL.Tooltip.successChance"),
+      actor,
+      bonusKey: `${path}.modBonus`,
+    }),
+  ].join("");
+}
 
 /* -------------------------------------------- */
 /*  secondaryAttribute — speed, luck, faith, …  */
@@ -595,10 +669,20 @@ registerTooltip("attribute", ({ id, actor }) => {
  * SecondaryAttribute lang entry, so their label comes from the NPC field list.
  */
 registerTooltip("secondaryAttribute", ({ id, actor }) => {
-  if (!id || !actor?.system?.secondaryAttributes?.[id]) return null;
+  const attribute = actor?.system?.secondaryAttributes?.[id];
+  if (!id || !attribute) return null;
 
   const desc = localizeOrNull(`REDSTEEL.StatInfo.${id}`);
-  if (!desc) return null;
+  // Recorded in Actor#_prepareCharacterData, one row per term or step, so the
+  // column sums to the number in the box (see utils/ratingBreakdown.mjs).
+  const breakdown = renderBreakdown({
+    parts: attribute.totalParts,
+    total: attribute.total,
+    actor,
+    bonusKey: `system.secondaryAttributes.${id}.bonus`,
+    extraSources: attribute.bonusParts,
+  });
+  if (!desc && !breakdown) return null;
 
   return ttFrame({
     title:
@@ -607,7 +691,7 @@ registerTooltip("secondaryAttribute", ({ id, actor }) => {
       ) ??
       localizeOrNull(`REDSTEEL.Actor.NPC.FIELDS.${id}.label`) ??
       id,
-    body: `<div class="tt-desc">${desc}</div>`,
+    body: `${breakdown}${desc ? `<div class="tt-desc">${desc}</div>` : ""}`,
     footer: ruleNoteFooter("attributes"),
   });
 });

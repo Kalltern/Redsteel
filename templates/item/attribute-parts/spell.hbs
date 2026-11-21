@@ -79,6 +79,42 @@
         </div>
         {{/if}}
 
+        {{#if (eq system.area.shape "wall")}}
+        <div class="grid-span-1">
+        <label class="resource-label" data-tooltip="{{localize 'REDSTEEL.SpellArea.LengthHint'}}">{{localize "REDSTEEL.SpellArea.Length"}}</label>
+        <input type="text" name="system.area.length" value="{{system.area.length}}" data-dtype="String" />
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.SpellArea.Blocks"}}</label>
+        <select name="system.area.blocks">
+          {{#each config.spellAreaBlocks as |label key|}}
+            <option value="{{key}}" {{#if (eq ../system.area.blocks key)}}selected{{/if}}>{{localize label}}</option>
+          {{/each}}
+        </select>
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label" data-tooltip="{{localize 'REDSTEEL.SpellArea.CrossingHint'}}">{{localize "REDSTEEL.SpellArea.Crossing"}}</label>
+        <input type="checkbox" name="system.area.crossing" {{checked system.area.crossing}} />
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label" data-tooltip="{{localize 'REDSTEEL.SpellArea.StopsHint'}}">{{localize "REDSTEEL.SpellArea.Stops"}}</label>
+        <input type="checkbox" name="system.area.stops" {{checked system.area.stops}} />
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label">{{localize "REDSTEEL.SpellArea.OccupiedOk"}}</label>
+        <input type="checkbox" name="system.area.occupiedOk" {{checked system.area.occupiedOk}} />
+        </div>
+
+        <div class="grid-span-1">
+        <label class="resource-label" data-tooltip="{{localize 'REDSTEEL.SpellArea.HexesPerCostHint'}}">{{localize "REDSTEEL.SpellArea.HexesPerCost"}}</label>
+        <input type="number" min="0" step="1" name="system.area.hexesPerCost" value="{{system.area.hexesPerCost}}" data-dtype="Number" />
+        </div>
+        {{/if}}
+
         {{#if (eq system.area.shape "cone")}}
         <div class="grid-span-1">
         <label class="resource-label">{{localize "REDSTEEL.SpellArea.Angle"}}</label>

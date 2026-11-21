@@ -17,7 +17,8 @@
 const SETTING = "spellAreaSyncVersion";
 // 2: zone movement (move, moveHexes) and the halved-duration rounds fix.
 // 3: traps (shape "trap", stops, mayBorder, decoy).
-const AREA_SYNC_VERSION = 3;
+// 4: walls (shape "wall", length, blocks, crossing, occupiedOk, hexesPerCost).
+const AREA_SYNC_VERSION = 4;
 /** template.json's `Item.spell.area` defaults, in a fixed key order. */
 const AREA_DEFAULTS = {
   shape: "",
@@ -32,6 +33,11 @@ const AREA_DEFAULTS = {
   stops: false,
   mayBorder: false,
   decoy: false,
+  length: "",
+  blocks: "",
+  crossing: false,
+  occupiedOk: false,
+  hexesPerCost: 0,
 };
 
 export function registerSpellAreaSyncSetting() {

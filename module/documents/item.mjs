@@ -238,6 +238,9 @@ export function weaponEnchantMods(entries) {
     breakthroughRolls: [],
     damageTypeMode: "",
     damageTypes: [],
+    // Bane (Metla) registry keys this weapon is a Bane against, unioned
+    // across every enchantment. Read by baneCombat.mjs `weaponBaneKeys`.
+    baneTypes: [],
     effects: { stagger: 0, bleed: 0, extra1: 0, extra2: 0, extra3: 0 },
     extras: [],
   };
@@ -267,6 +270,14 @@ export function weaponEnchantMods(entries) {
     for (const type of types) {
       const key = String(type ?? "").trim().toLowerCase();
       if (key && !mods.damageTypes.includes(key)) mods.damageTypes.push(key);
+    }
+    // Same index-keyed-object tolerance as damageTypes above.
+    const banes = Array.isArray(m.baneTypes)
+      ? m.baneTypes
+      : Object.values(m.baneTypes ?? {});
+    for (const bane of banes) {
+      const key = String(bane ?? "").trim();
+      if (key && !mods.baneTypes.includes(key)) mods.baneTypes.push(key);
     }
     const mode = String(m.damageTypeMode ?? "").trim();
     if (mode && mods.damageTypeMode !== "override") mods.damageTypeMode = mode;

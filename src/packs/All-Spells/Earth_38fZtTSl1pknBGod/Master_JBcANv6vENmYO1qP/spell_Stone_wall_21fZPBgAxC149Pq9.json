@@ -131,7 +131,26 @@
       "effect4": 0
     },
     "manualNotes": "",
-    "vsTest": false
+    "vsTest": false,
+    "area": {
+      "shape": "wall",
+      "size": 0,
+      "angle": 0,
+      "targets": "all",
+      "includeCaster": false,
+      "linger": true,
+      "rounds": "spellPower * 2 + 2",
+      "move": "",
+      "moveHexes": 0,
+      "stops": false,
+      "mayBorder": false,
+      "decoy": false,
+      "length": "spellPower",
+      "blocks": "solid",
+      "crossing": false,
+      "occupiedOk": false,
+      "hexesPerCost": 0
+    }
   },
   "effects": [],
   "folder": "JBcANv6vENmYO1qP",

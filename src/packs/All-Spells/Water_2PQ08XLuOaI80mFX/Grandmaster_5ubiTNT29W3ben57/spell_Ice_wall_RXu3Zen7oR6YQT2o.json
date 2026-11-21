@@ -125,7 +125,26 @@
     "vsTest": true,
     "attributeTest": "will",
     "testModifier": "@spellPower*3",
-    "versusAgainst": "dex,end"
+    "versusAgainst": "dex,end",
+    "area": {
+      "shape": "wall",
+      "size": 0,
+      "angle": 0,
+      "targets": "all",
+      "includeCaster": false,
+      "linger": true,
+      "rounds": "",
+      "move": "",
+      "moveHexes": 0,
+      "stops": false,
+      "mayBorder": false,
+      "decoy": false,
+      "length": "6",
+      "blocks": "solid",
+      "crossing": false,
+      "occupiedOk": true,
+      "hexesPerCost": 0
+    }
   },
   "effects": [],
   "folder": "5ubiTNT29W3ben57",

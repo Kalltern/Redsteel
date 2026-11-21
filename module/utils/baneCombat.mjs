@@ -36,16 +36,43 @@ const EMPTY_PROFILE = Object.freeze({
 });
 
 /**
+ * Bane registry keys a weapon carries through its enchantments
+ * (`enchantMods.baneTypes`, summed in documents/item.mjs). An enchanted
+ * weapon is a Bane against those categories for whoever swings it, on top
+ * of (never stacking with) the wielder's own picks. Stale keys are dropped.
+ * @param {Item|null|undefined} weapon
+ * @returns {string[]}
+ */
+export function weaponBaneKeys(weapon) {
+  const raw = weapon?.system?.enchantMods?.baneTypes;
+  const list = Array.isArray(raw) ? raw : Object.values(raw ?? {});
+  return [...new Set(list.filter((k) => typeof k === "string" && k in BANE_TYPES))];
+}
+
+/**
  * The bonus block that applies if the target turns out to be one of the
  * attacker's Banes. Fields are always present (0/empty when inactive) so
  * callers can read them unconditionally.
+ *
+ * `extraKeys` adds Bane categories that come from the weapon in hand rather
+ * than the actor (see {@link weaponBaneKeys}). They join the same key list,
+ * so the bonus bundle is identical and still applies once: the rules say
+ * Banes never stack, and a weapon Bane is just one more way to qualify.
  * @param {Actor} actor
+ * @param {{extraKeys?: string[]}} [options]
  * @returns {{active: boolean, keys: string[], attack: number, critChance: number,
  *   critRange: number, penetration: number, critDamage: number, critPen: number,
  *   precision: number, damageFormula: string}}
  */
-export function getBaneProfile(actor) {
-  const keys = [...getActorBanes(actor)];
+export function getBaneProfile(actor, { extraKeys = [] } = {}) {
+  const keys = [
+    ...new Set([
+      ...getActorBanes(actor),
+      ...(Array.isArray(extraKeys) ? extraKeys : []).filter(
+        (k) => k in BANE_TYPES,
+      ),
+    ]),
+  ];
   if (!keys.length) return { ...EMPTY_PROFILE };
 
   const profile = {
@@ -374,7 +401,12 @@ export function resolveBaneVariant(attack, targetActor) {
 
   const attacker = resolveActorById(attack.bane.attackerId);
   if (attacker) {
-    const ownProfile = getBaneProfile(attacker);
+    // The weapon's Bane keys were stamped on the packet at roll time: the
+    // card must keep answering for the weapon that actually struck, even if
+    // the attacker has since swapped weapon sets.
+    const ownProfile = getBaneProfile(attacker, {
+      extraKeys: attack.bane.weaponKeys ?? [],
+    });
     if (ownProfile.active && actorMatchesBane(targetActor, ownProfile.keys)) {
       candidates.push({ profile: ownProfile, viaMark: false });
     }
@@ -479,6 +511,8 @@ export function getDisplayBaneVariants(bane) {
  * can grant the shared bonus to any attacker.
  * @param {object} params
  * @param {Actor} params.actor
+ * @param {Item|null} [params.weapon] the weapon swung; its enchantment Bane
+ *   keys join the attacker's own (see {@link weaponBaneKeys})
  * @param {Roll} params.attackRoll
  * @param {number} params.criticalSuccessThreshold
  * @param {number} params.critScoreResult
@@ -495,6 +529,7 @@ export function getDisplayBaneVariants(bane) {
  */
 export async function buildBanePacket({
   actor,
+  weapon = null,
   attackRoll,
   criticalSuccessThreshold,
   critScoreResult,
@@ -506,7 +541,8 @@ export async function buildBanePacket({
   penCap,
   baseCritSuccess,
 }) {
-  const ownProfile = getBaneProfile(actor);
+  const weaponKeys = weaponBaneKeys(weapon);
+  const ownProfile = getBaneProfile(actor, { extraKeys: weaponKeys });
   const anyMarkInPlay = markedCandidates().some((a) =>
     a.effects.some((e) => e.statuses?.has("expose_weakness")),
   );
@@ -518,6 +554,7 @@ export async function buildBanePacket({
 
   const packet = {
     attackerId: actor.id,
+    weaponKeys,
     damageBonus: baneDamageExtra,
     maxCritDegree: getMaxCritDegree(actor),
     baseCritSuccess: Boolean(baseCritSuccess),

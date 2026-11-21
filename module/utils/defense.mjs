@@ -7,7 +7,7 @@ import {
   tagRollSkill,
 } from "./rollAdvantage.mjs";
 import { getDefenseRerollTokens } from "./rerolls.mjs";
-import { getBaneProfile } from "./baneCombat.mjs";
+import { getBaneProfile, weaponBaneKeys } from "./baneCombat.mjs";
 import { buildTempHealthGrantFlag } from "./tempHealthGrant.mjs";
 import { acrobaticDeflect, fencingDaggerDeflect } from "./featureCombat.mjs";
 import { buildVeteranRestFlag } from "./veteranRest.mjs";
@@ -763,7 +763,18 @@ export async function buildDefenseProfile({
   const weapon =
     mode === "melee" ? asMakeshiftMelee(context.weapon) : context.weapon;
   const offProps = getOffhandProps(context);
-  const baneProfile = getBaneProfile(actor);
+  // A Bane-enchanted weapon (enchantMods.baneTypes) also qualifies the
+  // "against a Bane" toggle, but only for a parry: the weapon is what turns
+  // the blow. Dodge and ranged defense read the wielder's own Bane alone.
+  const baneProfile = getBaneProfile(actor, {
+    extraKeys:
+      mode === "melee"
+        ? [
+            ...weaponBaneKeys(context?.weapon),
+            ...weaponBaneKeys(context?.isDualWield ? context.offWeapon : null),
+          ]
+        : [],
+  });
   const overwhelmPenalty = overwhelmPenaltyFor(actor, overwhelmStacks);
 
   let formula;
@@ -1102,8 +1113,6 @@ export async function defenseRoll({
   /** This defense against the attack it is answering. See {@link renderVersusBlock}. */
   const resolveVersusAttack = (defense) => renderVersusBlock(attack, defense);
 
-  const baneProfile = getBaneProfile(actor);
-
   const hasGuard = actor.effects.some(
     (e) =>
       e.getFlag("core", "statusId") === "guard" || e.statuses?.has("guard"),
@@ -1252,6 +1261,16 @@ export async function defenseRoll({
   // Try active weapon first (PC flow)
   const context = game.redsteel.resolveWeaponContext(actor, ability);
   const activeWeapon = context?.weapon;
+
+  // Offers the "against a Bane" toggle when the defender has a Bane of their
+  // own or wields a Bane-enchanted weapon. Which bonuses the toggle then
+  // grants per defense mode is decided in buildDefenseProfile.
+  const baneProfile = getBaneProfile(actor, {
+    extraKeys: [
+      ...weaponBaneKeys(activeWeapon),
+      ...weaponBaneKeys(context?.isDualWield ? context.offWeapon : null),
+    ],
+  });
 
   const hasLongReach = hasDefenseLongReach(actor, activeWeapon);
 

@@ -295,6 +295,13 @@ export class RedsteelActor extends Actor {
     // prepared.
     const shieldStrain = this.statuses?.has("shield_strain") ?? false;
 
+    // Named gear contributions to Initiative / Speed `bonus`, for the header
+    // tooltip breakdown (utils/ratingBreakdown.mjs). Effects are named there
+    // straight off the actor; only what code adds is recorded here.
+    for (const key of ["ini", "spd"]) {
+      if (secondaryAttribute?.[key]) secondaryAttribute[key].bonusParts = [];
+    }
+
     // Předvoj → "Zbroje nesnižují Rychlost ani Iniciativu" (zbrojeRychlost):
     // worn armor's Initiative and Speed penalties are dropped below (a bonus
     // still counts). Shields are not armor and keep theirs (the weapon set
@@ -330,9 +337,16 @@ export class RedsteelActor extends Actor {
           skill.stealth.bonus += item.system.stealthPenalty ?? 0;
           // A shield that comes through here keeps its penalties.
           const armorOnly = item.system.shield === true ? (v) => v : armorPenalty;
-          secondaryAttribute.ini.bonus += armorOnly(
+          const iniGear = armorOnly(
             contribution((item.system.iniPenalty ?? 0) + (q.ini ?? 0)),
           );
+          secondaryAttribute.ini.bonus += iniGear;
+          if (Number(iniGear)) {
+            secondaryAttribute.ini.bonusParts.push({
+              name: item.name,
+              value: Number(iniGear),
+            });
+          }
           secondaryAttribute.spd.max += armorOnly(
             contribution(item.system.maxSpeed ?? 0),
           );
@@ -449,6 +463,10 @@ export class RedsteelActor extends Actor {
         reconcileParts(skill, "finesseRating", "finesseRatingParts");
       }
     }
+    // The header's Speed, Initiative, Resolve, ... boxes.
+    for (const attribute of Object.values(systemData.secondaryAttributes ?? {})) {
+      reconcileParts(attribute, "total", "totalParts");
+    }
   }
 
   /**
@@ -513,7 +531,7 @@ export class RedsteelActor extends Actor {
     );
   }
 
-  _replayEffectChanges(key, base) {
+  _replayEffectChanges(key, base, trace = null) {
     const changes = [];
     for (const effect of this.appliedEffects ?? []) {
       for (const change of effect.changes ?? []) {
@@ -524,6 +542,7 @@ export class RedsteelActor extends Actor {
         changes.push({
           ...change,
           type,
+          effectName: effect.name ?? "",
           priority:
             change.priority ?? CONST.ACTIVE_EFFECT_CHANGE_TYPES[type] ?? 20,
         });
@@ -534,6 +553,7 @@ export class RedsteelActor extends Actor {
 
     let value = Number(base) || 0;
     for (const change of changes) {
+      const before = value;
       const delta = Number(change.value) || 0;
       switch (change.type) {
         case "add":
@@ -558,6 +578,15 @@ export class RedsteelActor extends Actor {
           // CUSTOM has no meaning for a plain number; leave the value alone.
           break;
       }
+      // Tooltip breakdown only: what this one change did to the running
+      // number. Recording never alters the result.
+      trace?.push({
+        type: "effect",
+        name: change.effectName,
+        changeType: change.type,
+        operand: delta,
+        value: Math.round((value - before) * 100) / 100,
+      });
     }
     return value;
   }
@@ -833,6 +862,17 @@ export class RedsteelActor extends Actor {
           // Initiative / speed penalties
           secondary.ini.bonus += shield.iniPenalty;
           secondary.spd.bonus += shield.maxSpeed;
+          for (const [key, value] of [
+            ["ini", shield.iniPenalty],
+            ["spd", shield.maxSpeed],
+          ]) {
+            if (Number(value)) {
+              secondary[key].bonusParts?.push({
+                name: shieldLabel,
+                value: Number(value),
+              });
+            }
+          }
         } else {
           // Weapon class lives at system.class; there is no system.weapon object.
           const weaponClass = mainHand?.system?.class;
@@ -1638,10 +1678,16 @@ export class RedsteelActor extends Actor {
       rogueRank >= 10 ? 3 : rogueRank >= 4 ? 2 : rogueRank >= 3 ? 1 : 0;
     // Calculate initiative — capped at 15 for characters.
     const calcIni = [0, 0, 0, 1, 2, 3, 4, 5, 5, 5, 5];
-    secAttribute.ini.total = Math.min(
-      15,
-      calcIni[per] + secAttribute.ini.value + secAttribute.ini.bonus,
-    );
+    const rawIni =
+      calcIni[per] + secAttribute.ini.value + secAttribute.ini.bonus;
+    secAttribute.ini.total = Math.min(15, rawIni);
+    // Header tooltip breakdown; see utils/ratingBreakdown.mjs.
+    secAttribute.ini.totalParts = [
+      P.attrTable(6, calcIni[per]),
+      P.base(secAttribute.ini.value),
+      P.bonus(secAttribute.ini.bonus),
+      P.step("REDSTEEL.Tooltip.Part.cap", Math.min(0, 15 - rawIni), { cap: 15 }),
+    ];
 
     // Calculate speed
     // Fatigue: degree 5+ sets speed to 1; degree 2+ applies a flat -1.
@@ -1669,7 +1715,12 @@ export class RedsteelActor extends Actor {
     // Speed effects (Slow halves it, Haste adds, Flight overrides) target
     // spd.total, which this calculation has just overwritten — replay them.
     const speedKey = "system.secondaryAttributes.spd.total";
-    const replayedSpd = this._replayEffectChanges(speedKey, baseSpd);
+    const spdEffectSteps = [];
+    const replayedSpd = this._replayEffectChanges(
+      speedKey,
+      baseSpd,
+      spdEffectSteps,
+    );
     secAttribute.spd.max = speedCap;
     // Crippled (Zmrzačující výstřel, user ruling 2026-10-20) halves the
     // finished Speed, ROUNDED UP. Order: the effect replay (Slow / Root
@@ -1678,10 +1729,31 @@ export class RedsteelActor extends Actor {
     const cappedSpd = this._hasOverrideChange(speedKey)
       ? replayedSpd
       : Math.min(replayedSpd, speedCap);
-    secAttribute.spd.total = Math.max(
-      0,
-      this._crippledSpeed(Math.floor(cappedSpd)),
-    );
+    const flooredSpd = Math.floor(cappedSpd);
+    secAttribute.spd.total = Math.max(0, this._crippledSpeed(flooredSpd));
+
+    // Header tooltip breakdown, one row per step above, each row the change
+    // that step made, so the column sums to the Speed shown.
+    const cappedRaw = Math.min(rawSpd, speedCap);
+    const capLabel = "REDSTEEL.Tooltip.Part.cap";
+    secAttribute.spd.totalParts = [
+      P.attrTable(1, calcSpd[dex]),
+      P.base(secAttribute.spd.value),
+      P.bonus(secAttribute.spd.bonus),
+      P.step(capLabel, cappedRaw - rawSpd, { cap: speedCap }),
+      P.step(
+        "REDSTEEL.Tooltip.Part.fatigue",
+        baseSpd - cappedRaw,
+        { degree: fatigueDegree },
+      ),
+      ...spdEffectSteps,
+      P.step(capLabel, cappedSpd - replayedSpd, { cap: speedCap }),
+      P.step("REDSTEEL.Tooltip.Part.roundDown", flooredSpd - cappedSpd),
+      P.step(
+        "REDSTEEL.Tooltip.Part.crippled",
+        this._crippledSpeed(flooredSpd) - flooredSpd,
+      ),
+    ];
 
     // Calculate resolve from endurance and will
     const calcResEnd = [0, 0, 0, 1, 1, 2, 2, 3, 3, 3, 3];
@@ -1691,6 +1763,12 @@ export class RedsteelActor extends Actor {
       calcResWill[wil] +
       secAttribute.res.value +
       secAttribute.res.bonus;
+    secAttribute.res.totalParts = [
+      P.attrTable(2, calcResEnd[end]),
+      P.attrTable(4, calcResWill[wil]),
+      P.base(secAttribute.res.value),
+      P.bonus(secAttribute.res.bonus),
+    ];
 
     // Calculate wounds cap
     const calcWounds = [0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2];
@@ -1722,8 +1800,19 @@ export class RedsteelActor extends Actor {
     secAttribute.vis.total = secAttribute.vis.value + secAttribute.vis.bonus;
     secAttribute.sin.total = secAttribute.sin.value + secAttribute.sin.bonus;
     secAttribute.fth.total = secAttribute.fth.value + secAttribute.fth.bonus;
+    for (const key of ["lck", "vis", "sin", "fth"]) {
+      secAttribute[key].totalParts = [
+        P.base(secAttribute[key].value),
+        P.bonus(secAttribute[key].bonus),
+      ];
+    }
     // Godless (Neznaboh) trait: an Active Effect sets system.godless; Faith is 0.
-    if (systemData.godless) secAttribute.fth.total = 0;
+    if (systemData.godless) {
+      secAttribute.fth.totalParts.push(
+        P.step("REDSTEEL.Tooltip.Part.godless", -secAttribute.fth.total),
+      );
+      secAttribute.fth.total = 0;
+    }
     stat.corruption.max = stat.corruption.base + stat.corruption.bonus;
     // Death by exhaustion happens at the final degree; resilience pushes the
     // raw point cap from 6 to 7 so the same degree is reached one point later.

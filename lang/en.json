@@ -5913,6 +5913,11 @@
           "label": "Damage types",
           "hint": "Up to three types, applied according to the mode above."
         },
+        "baneTypes": {
+          "label": "Bane",
+          "hint": "The weapon counts as a Bane against these creature types: its wielder gets the full Bane bonus when attacking or parrying them. Does not stack with the wielder's own Bane.",
+          "pill": "Bane: {types}"
+        },
         "armorValue": {
           "label": "Armor"
         },
@@ -6167,7 +6172,27 @@
       "TrapOccupied": "A trap needs an empty hex.",
       "TrapAdjacent": "A trap cannot be next to another trap.",
       "TrapZoneName": "{spell} trap ({caster})",
-      "TrapTriggered": "{spell} is set off by {target}."
+      "TrapTriggered": "{spell} is set off by {target}.",
+      "ShapeWall": "Wall (painted hexes)",
+      "Length": "Wall length",
+      "LengthHint": "Wall: the most hexes it may cover, a number or a formula with the Spell Power token. Empty: no limit (Fire Wall is held back by its mana instead).",
+      "Blocks": "Blocks",
+      "BlocksNone": "Nothing",
+      "BlocksSight": "Vision only",
+      "BlocksSolid": "Movement and vision",
+      "Crossing": "Goes off on crossing",
+      "CrossingHint": "Wall: whoever walks into it gets the spell's card rolled for them, every time (Initial targets \"Enemies only\" spares the caster's side).",
+      "OccupiedOk": "May cover occupied hexes",
+      "HexesPerCost": "Hexes per cost",
+      "HexesPerCostHint": "Wall: the spell's cost is paid again for every this many hexes (Fire Wall: 4). 0: one cost for the whole wall.",
+      "PickWall": "{spell}: press on a hex and drag to draw the wall, up to {max} hexes. Release to finish (right click or Esc cancels).",
+      "PickWallNoLimit": "{spell}: press on a hex and drag to draw the wall. Release to finish (right click or Esc cancels).",
+      "WallCount": "{spell}: {count} / {max} hexes",
+      "WallCountNoLimit": "{spell}: {count} hexes",
+      "WallOccupied": "A wall needs empty hexes.",
+      "WallExtraCost": "{spell}: {hexes} hexes cost {groups} castings, {extra} Mana more.",
+      "WallZoneName": "{spell} ({caster})",
+      "WallCrossed": "{target} crosses {spell}."
     },
     "Positioning": {
       "Label": "Positioning",
@@ -6666,6 +6691,7 @@
       "current": "Current",
       "noteMissing": "Could not open the rules note.",
       "Calculation": "Calculation",
+      "score": "Score",
       "WhenDefending": "When defending",
       "Part": {
         "rank": "Rank {rank}",
@@ -6686,7 +6712,12 @@
         "makeshiftWeapon": "Makeshift weapon",
         "daggerDefense": "No dagger penalty (Shadow)",
         "shield": "Shield",
-        "dualWield": "Dual wielding"
+        "dualWield": "Dual wielding",
+        "cap": "Cap ({cap})",
+        "fatigue": "Fatigue (degree {degree})",
+        "roundDown": "Rounded down",
+        "crippled": "Crippled (halved)",
+        "godless": "Godless"
       }
     },
     "Keyword": {
