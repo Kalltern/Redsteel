@@ -5,6 +5,26 @@ GitHub.
 
 ## Unreleased
 
+## 0.17.0
+
+- Specialisations automated: the Mancer schools (spell follow ups, healing and
+  shield effects, hibernation) and Mentalist (Meditation, hidden Telepathy with
+  per target link pricing, Mental Strain upgrades)
+- Spell areas on the hex grid: burst, aura, cone and line spells are placed as a
+  hex shape, auto target occupants and can leave lingering Scene Region zones;
+  steered and drifting zones
+- Spell traps: hidden one hex runes and Decoy, with movement stops and delayed
+  effects on detonation
+- Wall spells (Stone wall, Fire Wall, Ice wall, Mystical wall) are placed as walls
+  on the grid
+- In place rerolls on chat cards and embedded tests, with linked defenses
+  rejudged
+- Mind Bending can be ended from a hotbar chip
+- Enchantments can make a weapon a Bane against up to three creature types: the
+  wielder gets the Bane bonus attacking them and on a parry, never stacking with
+  their own Bane
+- Caster specialisation bonuses are grouped into hoverable pills
+
 ## 0.16.0
 
 - Specialisations automated: Sharpshooter, Veneficus, Elymas and Incantator;
